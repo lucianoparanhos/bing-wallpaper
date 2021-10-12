@@ -6,92 +6,127 @@
     xmlns:local="using:UWP_Bing_Wallpaper"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    Width="838"
     muxc:BackdropMaterial.ApplyToRootOrPageBackground="True"
     mc:Ignorable="d">
 
     <Page.Resources>
         <!--  This top margin is the height of the custom TitleBar  -->
         <Thickness x:Key="NavigationViewContentMargin">0,48,0,0</Thickness>
+        <Thickness x:Key="NavigationViewContentGridBorderThickness">0</Thickness>
+        <SolidColorBrush x:Key="NavigationViewContentBackground" Color="Transparent" />
     </Page.Resources>
 
-    <Grid>
-        <Border
-            x:Name="AppTitleBar"
-            Height="40"
-            Margin="48,8,0,0"
-            VerticalAlignment="Top"
-            Background="Transparent"
-            Canvas.ZIndex="1"
-            IsHitTestVisible="True">
-            <StackPanel Orientation="Horizontal">
-                <Image
-                    x:Name="AppFontIcon"
-                    Width="16"
-                    Height="16"
+    <Grid Margin="0,18,0,0">
+
+        <Frame x:Name="contentFrame">
+
+            <StackPanel Margin="0,0,0,0" Orientation="Vertical">
+
+                <!--  ComboBox  -->
+                <Border
+                    Width="800"
+                    Height="80"
+                    Margin="0,0,0,9"
                     HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Source="Assets/Square44x44Logo.png" />
-                <TextBlock
-                    x:Name="AppTitle"
-                    Margin="12,0,0,0"
-                    VerticalAlignment="Center"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    Text="Test App Title" />
-            </StackPanel>
-        </Border>
-        <muxc:NavigationView
-            x:Name="NavigationViewControl"
-            Canvas.ZIndex="0"
-            DisplayModeChanged="NavigationViewControl_DisplayModeChanged"
-            Header="Title"
-            IsBackButtonVisible="Visible"
-            IsTitleBarAutoPaddingEnabled="False">
-            <muxc:NavigationView.MenuItems>
-                <muxc:NavigationViewItem Content="Bing.com" Icon="Target" />
-            </muxc:NavigationView.MenuItems>
-            <Grid Margin="50,0,0,0">
+                    VerticalAlignment="Top"
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8">
 
-                <Grid>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel
+                        Padding="0,0,0,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Orientation="Horizontal">
+                        <ComboBox
+                            x:Name="LocaleComboBox"
+                            Width="330"
+                            Margin="0,0,9,0"
+                            DisplayMemberPath="DisplayName"
+                            Header="Localização"
+                            IsEditable="False"
+                            ItemsSource="{x:Bind BingCultures}"
+                            SelectedItem="{x:Bind selectedCultureInfo, Mode=OneTime}"
+                            SelectionChanged="LocaleComboBox_SelectionChanged" />
 
-                        <StackPanel Orientation="Vertical">
-                            <FlipView
-                                x:Name="Gallery"
-                                Height="360"
-                                MaxWidth="640"
-                                BorderBrush="Black"
-                                BorderThickness="6,6,6,6" />
-
-
-                            <muxc:PipsPager
-                                x:Name="FlipViewPipsPage"
-                                Margin="0,12,0,0"
-                                HorizontalAlignment="Center"
-                                NextButtonVisibility="Visible"
-                                PreviousButtonVisibility="Visible"
-                                SelectedPageIndex="{x:Bind Path=Gallery.SelectedIndex, Mode=TwoWay}" />
-                        </StackPanel>
-                        <StackPanel Orientation="Vertical">
-                            <ComboBox
-                                x:Name="localeComboBox"
-                                Width="330"
-                                DisplayMemberPath="NativeName"
-                                Header="Locale"
-                                ItemsSource="{x:Bind BingCultures}"
-                                SelectedItem="{x:Bind}" />
-
-                            <HyperlinkButton x:Name="BingHyperLink" FontSize="26" />
-                            <TextBlock x:Name="BingCopyright" />
-
-
-
-                        </StackPanel>
+                        <ComboBox
+                            x:Name="ResolutionComboBox"
+                            Width="330"
+                            Margin="9,0,0,0"
+                            Header="Resolução" />
                     </StackPanel>
 
-                </Grid>
 
-            </Grid>
-        </muxc:NavigationView>
+
+                </Border>
+
+                <Border
+                    Width="800"
+                    Height="440"
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8">
+
+                    <StackPanel Orientation="Vertical">
+
+                        <FlipView
+                            x:Name="Gallery"
+                            Height="360"
+                            MaxWidth="640"
+                            Margin="20"
+                            BorderBrush="Black"
+                            BorderThickness="6,6,6,6"
+                            CornerRadius="8" />
+
+
+                        <muxc:PipsPager
+                            x:Name="FlipViewPipsPage"
+                            Margin="0,12,0,0"
+                            HorizontalAlignment="Center"
+                            NextButtonVisibility="Visible"
+                            PreviousButtonVisibility="Visible"
+                            SelectedPageIndex="{x:Bind Path=Gallery.SelectedIndex, Mode=TwoWay}" />
+                    </StackPanel>
+
+
+                </Border>
+
+                <Border
+                    Width="600"
+                    Height="200"
+                    Margin="16"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8">
+
+                    <StackPanel Orientation="Vertical">
+
+
+                        <HyperlinkButton
+                            x:Name="BingHyperLink"
+                            Content="Lorem Ipsuym"
+                            FontSize="26" />
+                        <TextBlock x:Name="BingCopyright" />
+
+
+
+                    </StackPanel>
+
+
+                </Border>
+            </StackPanel>
+
+        </Frame>
+
     </Grid>
 
 </Page>

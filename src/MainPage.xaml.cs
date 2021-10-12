@@ -10,18 +10,12 @@ using UWP_Bing_Wallpaper.Models.Bing;
 using Windows.ApplicationModel.Core;
 using Windows.UI;
 using Windows.UI.ViewManagement;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
-
 namespace UWP_Bing_Wallpaper
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class MainPage : Page
     {
         public MainPage()
@@ -35,43 +29,23 @@ namespace UWP_Bing_Wallpaper
             // Hide default title bar.
             CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
             coreTitleBar.ExtendViewIntoTitleBar = true;
-            UpdateTitleBarLayout(coreTitleBar);
-
-            // Set XAML element as a draggable region.
-            Window.Current.SetTitleBar(AppTitleBar);
-
-            // Register a handler for when the size of the overlaid caption control changes.
-            // For example, when the app moves to a screen with a different DPI.
-            coreTitleBar.LayoutMetricsChanged += CoreTitleBar_LayoutMetricsChanged;
-
-            // Register a handler for when the title bar visibility changes.
-            // For example, when the title bar is invoked in full screen mode.
-            coreTitleBar.IsVisibleChanged += CoreTitleBar_IsVisibleChanged;
-
-            //Register a handler for when the window changes focus
-            Window.Current.Activated += Current_Activated;
 
             LoadLocaleComboBox();
-            SetLocaleComboBox();
-
-            GetBingData();
+            LoadBingImageData();
         }
 
-        private void SetLocaleComboBox()
-        {
-            localeComboBox.SelectedItem = defaultCultureInfo;
-        }
+        #region ComboBox
 
         private readonly ObservableCollection<CultureInfo> BingCultures = new ObservableCollection<CultureInfo>();
-        private CultureInfo defaultCultureInfo;
+        private CultureInfo selectedCultureInfo;
 
         private void LoadLocaleComboBox()
         {
-            defaultCultureInfo = CultureInfo.CurrentCulture ?? CultureInfo.GetCultureInfo(BingLocales.DefaultLocale);
+            selectedCultureInfo = CultureInfo.CurrentCulture ?? CultureInfo.GetCultureInfo(BingLocales.DefaultLocale);
 
             if (CultureInfo.CurrentCulture == null)
             {
-                BingCultures.Add(defaultCultureInfo);
+                BingCultures.Add(selectedCultureInfo);
             }
             else
             {
@@ -79,24 +53,39 @@ namespace UWP_Bing_Wallpaper
             }
         }
 
-        private BingImageResponse _bingResponse;
-
-        private async void GetBingData()
+        private void LocaleComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _bingResponse = await GetData();
+            if (!(sender is ComboBox cb) || cb.IsLoaded == false || !(cb.SelectedItem is CultureInfo cultureInfo))
+            {
+                return;
+            }
 
+            if (cultureInfo.Name != selectedCultureInfo.Name)
+            {
+                selectedCultureInfo = cultureInfo;
+                LoadBingImageData();
+            }
+        }
+
+        #endregion ComboBox
+
+        private BingImageResponse _bingImageResponse;
+
+        private async void LoadBingImageData()
+        {
+            _bingImageResponse = await GetData(selectedCultureInfo);
             LoadImages();
         }
 
         private void LoadImages()
         {
-            if (_bingResponse == null)
+            if (_bingImageResponse == null)
             {
                 // TODO: Load default image
                 return;
             };
 
-            List<Image> imageList = GenerateImageList(_bingResponse.Images);
+            List<Image> imageList = GenerateImageList(_bingImageResponse.Images);
 
             Gallery.ItemsSource = imageList;
             FlipViewPipsPage.NumberOfPages = imageList.Count;
@@ -136,20 +125,20 @@ namespace UWP_Bing_Wallpaper
 
             string selectedItemName = img.Name;
 
-            BingImage selectedImage = _bingResponse.Images.SingleOrDefault(x => x.Hsh == selectedItemName);
+            BingImage selectedImage = _bingImageResponse.Images.SingleOrDefault(x => x.Hsh == selectedItemName);
 
-            NavigationViewControl.Header = selectedImage.Title;
+            //NavigationViewControl.Header = selectedImage.Title;
             BingHyperLink.Content = selectedImage.Copyright;
             BingHyperLink.NavigateUri = new Uri(selectedImage.CopyrightLink);
 
             BingCopyright.Text = selectedImage.Copyright;
         }
 
-        private async Task<BingImageResponse> GetData()
+        private async Task<BingImageResponse> GetData(CultureInfo cultureInfo)
         {
-            var idx = 0;
-            var n = 8;
-            var mkt = "en-US";
+            int idx = 0;
+            int n = 8;
+            string mkt = cultureInfo.Name;
 
             var requestUri = string.Format("http://www.bing.com/HPImageArchive.aspx?format=js&idx={0}&n={1}&mkt={2}", idx, n, mkt);
 
@@ -163,72 +152,6 @@ namespace UWP_Bing_Wallpaper
             catch (Exception)
             {
                 return null;
-            }
-        }
-
-        private void CoreTitleBar_LayoutMetricsChanged(CoreApplicationViewTitleBar sender, object args)
-        {
-            UpdateTitleBarLayout(sender);
-        }
-
-        private void UpdateTitleBarLayout(CoreApplicationViewTitleBar coreTitleBar)
-        {
-            // Update title bar control size as needed to account for system size changes.
-            AppTitleBar.Height = coreTitleBar.Height;
-
-            // Ensure the custom title bar does not overlap window caption controls
-            Thickness currMargin = AppTitleBar.Margin;
-            AppTitleBar.Margin = new Thickness(currMargin.Left, currMargin.Top, coreTitleBar.SystemOverlayRightInset, currMargin.Bottom);
-        }
-
-        private void CoreTitleBar_IsVisibleChanged(CoreApplicationViewTitleBar sender, object args)
-        {
-            AppTitleBar.Visibility = sender.IsVisible ? Visibility.Visible : Visibility.Collapsed;
-        }
-
-        // Update the TitleBar based on the inactive/active state of the app
-        private void Current_Activated(object sender, Windows.UI.Core.WindowActivatedEventArgs e)
-        {
-            SolidColorBrush defaultForegroundBrush = (SolidColorBrush)Application.Current.Resources["TextFillColorPrimaryBrush"];
-            SolidColorBrush inactiveForegroundBrush = (SolidColorBrush)Application.Current.Resources["TextFillColorDisabledBrush"];
-
-            if (e.WindowActivationState == Windows.UI.Core.CoreWindowActivationState.Deactivated)
-            {
-                AppTitle.Foreground = inactiveForegroundBrush;
-            }
-            else
-            {
-                AppTitle.Foreground = defaultForegroundBrush;
-            }
-        }
-
-        // Update the TitleBar content layout depending on NavigationView DisplayMode
-        private void NavigationViewControl_DisplayModeChanged(Microsoft.UI.Xaml.Controls.NavigationView sender, Microsoft.UI.Xaml.Controls.NavigationViewDisplayModeChangedEventArgs args)
-        {
-            const int topIndent = 16;
-            const int expandedIndent = 48;
-            int minimalIndent = 104;
-
-            // If the back button is not visible, reduce the TitleBar content indent.
-            if (NavigationViewControl.IsBackButtonVisible.Equals(Microsoft.UI.Xaml.Controls.NavigationViewBackButtonVisible.Collapsed))
-            {
-                minimalIndent = 48;
-            }
-
-            Thickness currMargin = AppTitleBar.Margin;
-
-            // Set the TitleBar margin dependent on NavigationView display mode
-            if (sender.PaneDisplayMode == Microsoft.UI.Xaml.Controls.NavigationViewPaneDisplayMode.Top)
-            {
-                AppTitleBar.Margin = new Thickness(topIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
-            }
-            else if (sender.DisplayMode == Microsoft.UI.Xaml.Controls.NavigationViewDisplayMode.Minimal)
-            {
-                AppTitleBar.Margin = new Thickness(minimalIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
-            }
-            else
-            {
-                AppTitleBar.Margin = new Thickness(expandedIndent, currMargin.Top, currMargin.Right, currMargin.Bottom);
             }
         }
     }
