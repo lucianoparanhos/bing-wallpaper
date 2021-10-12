@@ -1,4 +1,4 @@
-﻿namespace UWP_Bing_Wallpaper.Models
+﻿namespace UWP_Bing_Wallpaper.Models.Bing
 {
     public class BingImage
     {
