@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using UWP_Bing_Wallpaper.Models.Bing;
-using Windows.ApplicationModel.Core;
+using Windows.Graphics.Display;
 using Windows.UI;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml.Controls;
@@ -25,18 +25,35 @@ namespace UWP_Bing_Wallpaper
 
             titleBar.ButtonBackgroundColor = Colors.Transparent;
             titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-
-            // Hide default title bar.
-            CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
-            coreTitleBar.ExtendViewIntoTitleBar = true;
+                       
 
             LoadLocaleComboBox();
+            LoadResolutionComboBox();
             LoadBingImageData();
         }
 
-        #region ComboBox
+        #region ResolutionComboBox
 
-        private readonly ObservableCollection<CultureInfo> BingCultures = new ObservableCollection<CultureInfo>();
+        private ObservableCollection<BingWallpaperResolution> bingWallpaperResolutions;
+        private string selectedResolution;
+
+        private void LoadResolutionComboBox()
+        {
+            DisplayInformation displayInformation = DisplayInformation.GetForCurrentView();
+            uint screenWidth = displayInformation.ScreenWidthInRawPixels;
+            uint screenHeight = displayInformation.ScreenHeightInRawPixels;
+
+            BingWallpaperResolution bingWallpaperResolution = new BingWallpaperResolution(screenWidth, screenHeight);
+            IOrderedEnumerable<BingWallpaperResolution> resolutions = bingWallpaperResolution.GetResolutions().OrderByDescending(x => x.ScreenWidth).ThenByDescending(x => x.ScreenHeight);
+
+            bingWallpaperResolutions = new ObservableCollection<BingWallpaperResolution>(resolutions);
+        }
+
+        #endregion ResolutionComboBox
+
+        #region LocaleComboBox
+
+        private ObservableCollection<CultureInfo> bingCultures;
         private CultureInfo selectedCultureInfo;
 
         private void LoadLocaleComboBox()
@@ -45,11 +62,14 @@ namespace UWP_Bing_Wallpaper
 
             if (CultureInfo.CurrentCulture == null)
             {
-                BingCultures.Add(selectedCultureInfo);
+                bingCultures.Add(selectedCultureInfo);
             }
             else
             {
-                BingLocales.Locales.ToList().ForEach(culture => BingCultures.Add(CultureInfo.GetCultureInfo(culture)));
+                IList<CultureInfo> sortedList = new List<CultureInfo>();
+                BingLocales.Locales.ToList().ForEach(culture => sortedList.Add(CultureInfo.GetCultureInfo(culture)));
+
+                bingCultures = new ObservableCollection<CultureInfo>(sortedList.OrderBy(x => x.DisplayName));
             }
         }
 
@@ -67,7 +87,7 @@ namespace UWP_Bing_Wallpaper
             }
         }
 
-        #endregion ComboBox
+        #endregion LocaleComboBox
 
         private BingImageResponse _bingImageResponse;
 

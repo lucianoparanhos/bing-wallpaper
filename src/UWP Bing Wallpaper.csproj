@@ -124,6 +124,7 @@
     </Compile>
     <Compile Include="Models\Bing\BingImage.cs" />
     <Compile Include="Models\Bing\BingImageResponse.cs" />
+    <Compile Include="Models\Bing\BingWallpaperResolution.cs" />
     <Compile Include="Models\Bing\BingLocales.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\BingImageProvider.cs" />
