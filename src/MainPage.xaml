@@ -53,7 +53,9 @@
                             Width="330"
                             Margin="9,0,0,0"
                             Header="Wallpaper resolution"
-                            ItemsSource="{x:Bind bingWallpaperResolutions}" />
+                            ItemsSource="{x:Bind bingWallpaperResolutions}"
+                            SelectedItem="{x:Bind selectedResolution, Mode=OneTime}"
+                            SelectionChanged="ResolutionComboBox_SelectionChanged" />
                     </StackPanel>
 
 

@@ -35,7 +35,7 @@ namespace UWP_Bing_Wallpaper
         #region ResolutionComboBox
 
         private ObservableCollection<BingWallpaperResolution> bingWallpaperResolutions;
-        private string selectedResolution;
+        private BingWallpaperResolution selectedResolution;
 
         private void LoadResolutionComboBox()
         {
@@ -44,9 +44,19 @@ namespace UWP_Bing_Wallpaper
             uint screenHeight = displayInformation.ScreenHeightInRawPixels;
 
             BingWallpaperResolution bingWallpaperResolution = new BingWallpaperResolution(screenWidth, screenHeight);
-            IOrderedEnumerable<BingWallpaperResolution> resolutions = bingWallpaperResolution.GetResolutions().OrderByDescending(x => x.ScreenWidth).ThenByDescending(x => x.ScreenHeight);
+            bingWallpaperResolutions = bingWallpaperResolution.GetResolutions();
 
-            bingWallpaperResolutions = new ObservableCollection<BingWallpaperResolution>(resolutions);
+            selectedResolution = bingWallpaperResolutions.SingleOrDefault(x => x.IsRecommended);
+        }
+
+        private void ResolutionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!(sender is ComboBox cb) || cb.IsLoaded == false || !(cb.SelectedItem is BingWallpaperResolution bingWallpaperResolution))
+            {
+                return;
+            }
+
+            selectedResolution = bingWallpaperResolution;
         }
 
         #endregion ResolutionComboBox
@@ -174,5 +184,7 @@ namespace UWP_Bing_Wallpaper
                 return null;
             }
         }
+
+        
     }
 }
